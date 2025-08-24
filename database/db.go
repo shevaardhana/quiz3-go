@@ -12,21 +12,26 @@ import (
 var DB *sql.DB
 
 func InitDB() *sql.DB {
-	// Ambil konfigurasi database dari environment variables
-	host := os.Getenv("DB_HOST")
-	port := os.Getenv("DB_PORT")
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	dbname := os.Getenv("DB_NAME")
+	var psqlInfo string
+	databaseURL := os.Getenv("DATABASE_URL")
+	if databaseURL != "" {
+		psqlInfo = databaseURL
+	} else {
+		host := os.Getenv("PGHOST")
+		port := os.Getenv("PGPORT")
+		user := os.Getenv("PGUSER")
+		password := os.Getenv("PGPASSWORD")
+		dbname := os.Getenv("PGDATABASE")
 
-	if host == "" || port == "" || user == "" || password == "" || dbname == "" {
-		log.Fatal("Environment variable DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME harus di-set")
+		if host == "" || port == "" || user == "" || password == "" || dbname == "" {
+			log.Fatal("Environment variable DATABASE_URL atau PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE harus di-set")
+		}
+
+		psqlInfo = fmt.Sprintf(
+			"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+			host, port, user, password, dbname,
+		)
 	}
-
-	psqlInfo := fmt.Sprintf(
-		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, password, dbname,
-	)
 
 	var err error
 	DB, err = sql.Open("postgres", psqlInfo)
