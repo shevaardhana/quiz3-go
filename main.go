@@ -10,6 +10,7 @@ import (
 func main() {
 	// Inisialisasi database
 	database.InitDB()
+	database.Migrate()
 
 	// Setup router
 	r := routers.SetupRouter()
